@@ -6,8 +6,9 @@ export default function Home() {
   const formElemRef = useRef<HTMLFormElement>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [chunkCount, setChunkCount] = useState(0);
+  const [currentProgress, setCurrentProgress] = useState('0%');
 
-  const uploadFile = (e) => {
+  const uploadFile = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const file = formData.get('file') as File;
@@ -22,6 +23,7 @@ export default function Home() {
     let isFailed = false
     setUploadProgress(0)
     setChunkCount(chunks.length)
+    setCurrentProgress('0%')
 
     chunks.map((item, index) => {
       fetch('/api/upload', {
@@ -42,7 +44,9 @@ export default function Home() {
           const resJson = res.json();
           resJson.then((json) => {
             if (json.isFileSaved) {
-              alert('file upload success');
+              setTimeout(() => {
+                alert('file upload success');
+              }, 1000)
             }
           })
         } else {
@@ -62,8 +66,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!formElemRef.current) return;
-    formElemRef.current.onsubmit = uploadFile;
+    formElemRef.current.onsubmit = uploadFile as any;
   }, []);
+
+  useEffect(() => {
+    let progress = (uploadProgress / chunkCount * 100).toFixed(2)
+    if (isNaN(+progress)) progress = '0'
+    setCurrentProgress(progress + '%')
+  }, [uploadProgress, chunkCount])
 
   return (
     <main className="flex min-h-screen flex-col p-24 bg-slate-600">
@@ -72,9 +82,9 @@ export default function Home() {
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-48" type="submit">Upload</button>
       </form>
       {/* show upload progress */}
-      <div className="text-white mt-4 text-lg font-bold mb-2 bg-gradient-to-tr from-sky-500 to-green-700 w-fit">upload progress</div>
+      <div className="text-white mt-4 text-lg font-bold mb-2 bg-gradient-to-tr from-sky-500 to-green-700 w-fit">upload progress: {currentProgress}</div>
       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(uploadProgress / chunkCount * 100).toFixed(2)}%` }}></div>
+        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${currentProgress}` }}></div>
       </div>
     </main>
   );
