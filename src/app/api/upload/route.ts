@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   }
 
   // sleep random time for mocking upload progress
-  return await new Promise(resolve => setTimeout(() => {
+  return await new Promise<Response>((resolve => setTimeout(() => {
     resolve(new Response(JSON.stringify({
       message: 'chunk upload success',
       fileName,
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     }), {
       status: 200
     }))
-  }, Math.random() * 1000))
+  }, Math.random() * 1000)))
 }
 
 function saveFileToPath(file: File, filePath: string) {
